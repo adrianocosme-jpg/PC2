@@ -1,15 +1,19 @@
 
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import api from "https://campuscultura-api.aaron-navarro.workers.dev/api";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import api from "../api/api";
+import { getErrorMessage } from "../api/errorHandler";
 
 function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const success = location.state?.success;
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,48 +28,54 @@ function Login() {
 
       localStorage.setItem("token", response.data.token);
 
-      navigate("/activities");
-    } catch (error: any) {
-      setError(
-        error.response?.data?.message || "Correo o contraseña incorrectos"
-      );
+      navigate("/activities", { replace: true });
+
+    } catch (err) {
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="login-container">
-      <form className="login-form" onSubmit={handleLogin}>
+    <div className="auth-container">
+      <form className="auth-form" onSubmit={handleLogin}>
         <h1>Iniciar sesión</h1>
-        <p>Ingresa a tu cuenta de CampusCultura</p>
+        <p>Bienvenido a Campus Cultura</p>
+
+        {success && (
+          <p className="success-message">{success}</p>
+        )}
 
         <label>Correo electrónico</label>
         <input
           type="email"
-          placeholder="ejemplo@correo.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          placeholder="correo@ejemplo.com"
           required
         />
 
         <label>Contraseña</label>
         <input
           type="password"
-          placeholder="Ingresa tu contraseña"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          placeholder="Ingresa tu contraseña"
           required
         />
 
-        {error && <p className="error-message">{error}</p>}
+        {error && (
+          <p className="error-message">{error}</p>
+        )}
 
         <button type="submit" disabled={loading}>
-          {loading ? "Ingresando..." : "Ingresar"}
+          {loading ? "Ingresando" : "Ingresar"}
         </button>
 
         <p>
-          ¿No tienes una cuenta? <Link to="/register">Regístrate</Link>
+          ¿No tienes una cuenta?{" "}
+          <Link to="/register">Regstrate</Link>
         </p>
       </form>
     </div>
